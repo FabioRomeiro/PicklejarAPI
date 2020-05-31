@@ -2,7 +2,6 @@ package com.romeiro.picklejar.model;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "PASSWORD")
@@ -36,17 +35,29 @@ public class Password {
     private Status status;
 
     @Column(name = "PWD_LASTACCESS")
-    private LocalDateTime lastAccess;
+    private LocalDateTime lastAccess = LocalDateTime.now();
 
     @Column(name = "PWD_LASTUPDATE")
-    private LocalDateTime lastUpdate;
+    private LocalDateTime lastUpdate = LocalDateTime.now();
 
     @Column(name = "PWD_CREATEDAT")
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @ManyToOne
     @JoinColumn(name = "USR_ID")
     private User user;
+
+    public Password () { }
+
+    public Password(String name, String username, String password, String link, Boolean favorite, String image, User user) {
+        this.name = name;
+        this.username = username;
+        this.password = password;
+        this.link = link;
+        this.favorite = favorite;
+        this.image = image;
+        this.user = user;
+    }
 
     public Integer getId() {
         return id;

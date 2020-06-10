@@ -2,6 +2,7 @@ package com.romeiro.picklejar.controller.dto;
 
 import com.romeiro.picklejar.model.Password;
 import com.romeiro.picklejar.model.Status;
+import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -73,7 +74,7 @@ public class PasswordDto {
         return createdAt;
     }
 
-    public static List<PasswordDto> convert(List<Password> passwords) {
-        return passwords.stream().map(PasswordDto::new).collect(Collectors.toList());
+    public static Page<PasswordDto> convert(Page<Password> passwords) {
+        return passwords.map(PasswordDto::new);
     }
 }

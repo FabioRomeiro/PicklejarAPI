@@ -6,6 +6,13 @@ import com.romeiro.picklejar.model.Password;
 import com.romeiro.picklejar.repository.PasswordRepository;
 import com.romeiro.picklejar.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -26,14 +33,16 @@ public class PasswordController {
     private UserRepository userRepository;
 
     @GetMapping
-    public List<PasswordDto> getPasswords(String text) {
-        List<Password> passwords = null;
+    @Cacheable(value = "passwordsList")
+    public Page<PasswordDto> getPasswords(@RequestParam(required = false) String text, @PageableDefault(sort = "id", direction = Sort.Direction.ASC, page = 0, size = 10) Pageable pageable) {
+
+        Page<Password> passwords = null;
 
         if (text == null) {
-            passwords = passwordRepository.findByUserId(1);
+            passwords = passwordRepository.findAll(pageable);
         }
         else {
-            passwords = passwordRepository.findByAnyText(text);
+            passwords = passwordRepository.findByAnyText(text, pageable);
         }
 
         return PasswordDto.convert(passwords);
@@ -41,6 +50,7 @@ public class PasswordController {
 
     @PostMapping
     @Transactional
+    @CacheEvict(value = "passwordsList", allEntries = true)
     public ResponseEntity<PasswordDto> registerPassword(@RequestBody PasswordForm passwordForm, UriComponentsBuilder uriBuilder) {
         Password password = passwordForm.convert(userRepository);
         passwordRepository.save(password);
@@ -62,6 +72,7 @@ public class PasswordController {
 
     @PutMapping("/{id}")
     @Transactional
+    @CacheEvict(value = "passwordsList", allEntries = true)
     public ResponseEntity<PasswordDto> updatePassword(@PathVariable("id") Integer id, @RequestBody PasswordForm form) {
         Optional<Password> optional = passwordRepository.findById(id);
 
@@ -75,6 +86,7 @@ public class PasswordController {
 
     @DeleteMapping("/{id}")
     @Transactional
+    @CacheEvict(value = "passwordsList", allEntries = true)
     public ResponseEntity deletePassword(@PathVariable("id") Integer id) {
         Optional<Password> password = passwordRepository.findById(id);
 

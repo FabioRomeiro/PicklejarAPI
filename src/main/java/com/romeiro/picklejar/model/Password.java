@@ -57,6 +57,9 @@ public class Password {
         this.favorite = favorite;
         this.image = image;
         this.user = user;
+
+        // Calculate strength
+        this.status = Status.MEDIUM;
     }
 
     public Integer getId() {

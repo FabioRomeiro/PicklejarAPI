@@ -1,10 +1,13 @@
 package com.romeiro.picklejar.controller.form;
 
 import com.romeiro.picklejar.model.Password;
+import com.romeiro.picklejar.model.Status;
 import com.romeiro.picklejar.model.User;
+import com.romeiro.picklejar.repository.PasswordRepository;
 import com.romeiro.picklejar.repository.UserRepository;
 
-import javax.persistence.Column;
+import java.time.LocalDateTime;
+
 
 public class PasswordForm {
 
@@ -75,5 +78,33 @@ public class PasswordForm {
     public Password convert(UserRepository userRepository) {
         User user = userRepository.findByUserId(userId);
         return new Password(name, username, password, link, favorite, image, user);
+    }
+
+    public Password update(Integer id, PasswordRepository passwordRepository) {
+        Password password = passwordRepository.getOne(id);
+
+        password.setLastUpdate(LocalDateTime.now());
+
+        if (this.name != null && !password.getName().equals(this.name))
+            password.setName(this.name);
+
+        if (this.image != null && !password.getImage().equals(this.image))
+            password.setImage(this.image);
+
+        if (this.favorite != null && password.getFavorite() != this.favorite)
+            password.setFavorite(this.favorite);
+
+        if (this.link != null && !password.getLink().equals(this.link))
+            password.setLink(this.link);
+
+        if (this.username != null && !password.getUsername().equals(this.username))
+            password.setUsername(this.username);
+
+        if (this.password != null && !password.getPassword().equals(this.password)) {
+            password.setStatus(Status.MEDIUM);
+            password.setPassword(this.password);
+        }
+
+        return password;
     }
 }

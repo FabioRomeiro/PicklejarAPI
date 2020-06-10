@@ -13,6 +13,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.transaction.Transactional;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/passwords")
@@ -49,22 +50,39 @@ public class PasswordController {
     }
 
     @GetMapping("/{id}")
-    public PasswordDto getPasswordById(@PathVariable("id") Integer id) {
-        Password password = passwordRepository.getOne(id);
-        return new PasswordDto(password);
+    public ResponseEntity<PasswordDto> getPasswordById(@PathVariable("id") Integer id) {
+        Optional<Password> password = passwordRepository.findById(id);
+
+        if (password.isPresent()) {
+            return ResponseEntity.ok(new PasswordDto(password.get()));
+        }
+
+        return ResponseEntity.notFound().build();
     }
 
     @PutMapping("/{id}")
     @Transactional
     public ResponseEntity<PasswordDto> updatePassword(@PathVariable("id") Integer id, @RequestBody PasswordForm form) {
-        Password password = form.update(id, passwordRepository);
-        return ResponseEntity.ok(new PasswordDto(password));
+        Optional<Password> optional = passwordRepository.findById(id);
+
+        if (optional.isPresent()) {
+            Password password = form.update(id, passwordRepository);
+            return ResponseEntity.ok(new PasswordDto(password));
+        }
+
+        return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity deletePassword(@PathVariable("id") Integer id) {
-        passwordRepository.deleteById(id);
-        return ResponseEntity.ok().build();
+        Optional<Password> password = passwordRepository.findById(id);
+
+        if (password.isPresent()) {
+            passwordRepository.deleteById(id);
+            return ResponseEntity.ok().build();
+        }
+
+        return ResponseEntity.notFound().build();
     }
 }

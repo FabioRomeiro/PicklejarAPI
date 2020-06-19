@@ -19,56 +19,28 @@ public class PasswordForm {
     private String image;
     private Integer userId;
 
-    public String getName() {
-        return name;
-    }
-
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getUsername() {
-        return username;
     }
 
     public void setUsername(String username) {
         this.username = username;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getLink() {
-        return link;
     }
 
     public void setLink(String link) {
         this.link = link;
     }
 
-    public Boolean getFavorite() {
-        return favorite;
-    }
-
     public void setFavorite(Boolean favorite) {
         this.favorite = favorite;
     }
 
-    public String getImage() {
-        return image;
-    }
-
     public void setImage(String image) {
         this.image = image;
-    }
-
-    public Integer getUserId() {
-        return userId;
     }
 
     public void setUserId(Integer userId) {
@@ -76,7 +48,7 @@ public class PasswordForm {
     }
 
     public Password convert(UserRepository userRepository) {
-        User user = userRepository.findByUserId(userId);
+        User user = userRepository.findById(userId).get();
         return new Password(name, username, password, link, favorite, image, user);
     }
 

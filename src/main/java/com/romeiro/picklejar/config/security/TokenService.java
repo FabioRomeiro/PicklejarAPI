@@ -47,4 +47,12 @@ public class TokenService {
         Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
         return Integer.parseInt(claims.getSubject());
     }
+
+    public String getFormattedToken(String token) {
+        if (token == null || token.isEmpty() || !token.startsWith("Bearer")) {
+            return null;
+        }
+
+        return token.substring(7, token.length());
+    }
 }

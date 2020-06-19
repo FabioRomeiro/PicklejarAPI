@@ -45,6 +45,7 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
             .antMatchers(HttpMethod.POST, "/auth").permitAll()
             .antMatchers(HttpMethod.GET, "/actuator/**").permitAll()
             .anyRequest().authenticated()
+            .and().cors()
             .and().csrf().disable()
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -59,9 +60,5 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
         web.ignoring().antMatchers(
     "/**.html", "/v2/api-docs", "/webjars/**", "/configuration", "/swagger-resources/**"
         );
-    }
-
-    public static void main(String[] args) {
-        System.out.println(new BCryptPasswordEncoder().encode("123456"));
     }
 }

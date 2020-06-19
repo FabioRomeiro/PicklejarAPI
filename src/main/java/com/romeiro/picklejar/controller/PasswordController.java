@@ -19,7 +19,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.transaction.Transactional;
 import java.net.URI;
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -33,12 +32,18 @@ public class PasswordController {
     private UserRepository userRepository;
 
     @GetMapping
-    @Cacheable(value = "passwordsList")
-    public Page<PasswordDto> getPasswords(@RequestParam(required = false) String text, @PageableDefault(sort = "id", direction = Sort.Direction.ASC, page = 0, size = 10) Pageable pageable) {
+    public Page<PasswordDto> getPasswords(
+            @RequestParam(required = false) String text,
+            @RequestParam(value = "not", required = false) Integer[] excludeIds,
+            @RequestParam(required = false) boolean favorite,
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC, page = 0, size = 10) Pageable pageable) {
 
         Page<Password> passwords = null;
 
-        if (text == null) {
+        if (text == null && excludeIds.length > 0) {
+            passwords = passwordRepository.findAllNotIn(excludeIds, pageable);
+        }
+        else if (text == null) {
             passwords = passwordRepository.findAll(pageable);
         }
         else {
@@ -50,7 +55,6 @@ public class PasswordController {
 
     @PostMapping
     @Transactional
-    @CacheEvict(value = "passwordsList", allEntries = true)
     public ResponseEntity<PasswordDto> registerPassword(@RequestBody PasswordForm passwordForm, UriComponentsBuilder uriBuilder) {
         Password password = passwordForm.convert(userRepository);
         passwordRepository.save(password);
@@ -72,7 +76,6 @@ public class PasswordController {
 
     @PutMapping("/{id}")
     @Transactional
-    @CacheEvict(value = "passwordsList", allEntries = true)
     public ResponseEntity<PasswordDto> updatePassword(@PathVariable("id") Integer id, @RequestBody PasswordForm form) {
         Optional<Password> optional = passwordRepository.findById(id);
 
@@ -86,13 +89,23 @@ public class PasswordController {
 
     @DeleteMapping("/{id}")
     @Transactional
-    @CacheEvict(value = "passwordsList", allEntries = true)
-    public ResponseEntity deletePassword(@PathVariable("id") Integer id) {
+    public ResponseEntity<?> deletePassword(@PathVariable("id") Integer id) {
         Optional<Password> password = passwordRepository.findById(id);
 
         if (password.isPresent()) {
             passwordRepository.deleteById(id);
             return ResponseEntity.ok().build();
+        }
+
+        return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/{id}/secret-key")
+    public ResponseEntity<String> getPasswordSecretKey(@PathVariable("id") Integer id) {
+        Optional<Password> password = passwordRepository.findById(id);
+
+        if (password.isPresent()) {
+            return ResponseEntity.ok(password.get().getPassword());
         }
 
         return ResponseEntity.notFound().build();

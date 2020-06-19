@@ -49,12 +49,8 @@ public class TokenFilterAuthentication extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
-    private String getToken(HttpServletRequest request) {
+    public String getToken(HttpServletRequest request) {
         String token = request.getHeader("Authorization");
-        if (token == null || token.isEmpty() || !token.startsWith("Bearer")) {
-            return null;
-        }
-
-        return token.substring(7, token.length());
+        return tokenService.getFormattedToken(token);
     }
 }

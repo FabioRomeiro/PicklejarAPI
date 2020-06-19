@@ -26,8 +26,20 @@ public class User implements UserDetails {
     @Column(name = "USR_PASSWORD")
     private String password;
 
+    @Column(name = "USR_PICTURE")
+    private String picture;
+
     @ManyToMany(fetch = FetchType.EAGER)
     private List<Role> roles = new ArrayList<>();
+
+    public User () { }
+
+    public User(String name, String email, String password, String picture) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.picture = picture;
+    }
 
     public Integer getId() {
         return id;
@@ -47,6 +59,14 @@ public class User implements UserDetails {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPicture() {
+        return picture;
+    }
+
+    public void setPicture(String picture) {
+        this.picture = picture;
     }
 
     public List<Role> getRoles() { return roles; }

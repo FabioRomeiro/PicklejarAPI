@@ -17,7 +17,6 @@ public class PasswordForm {
     private String link;
     private Boolean favorite;
     private String image;
-    private Integer userId;
 
     public void setName(String name) {
         this.name = name;
@@ -43,11 +42,7 @@ public class PasswordForm {
         this.image = image;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
-    }
-
-    public Password convert(UserRepository userRepository) {
+    public Password convert(UserRepository userRepository, Integer userId) {
         User user = userRepository.findById(userId).get();
         return new Password(name, username, password, link, favorite, image, user);
     }

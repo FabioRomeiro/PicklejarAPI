@@ -23,7 +23,7 @@ public class Log {
     private String metadata;
 
     @Column(name = "LOG_CREATEDAT")
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @ManyToOne
     @JoinColumn(name = "USR_ID")
@@ -32,6 +32,16 @@ public class Log {
     @ManyToOne
     @JoinColumn(name = "PWD_ID")
     private Password password;
+
+    public Log() { }
+
+    public Log(LogType type, String userAgent, String metadata, User user, Password password) {
+        this.type = type;
+        this.userAgent = userAgent;
+        this.metadata = metadata;
+        this.user = user;
+        this.password = password;
+    }
 
     public Integer getId() {
         return id;
@@ -59,5 +69,13 @@ public class Log {
 
     public void setMetadata(String metadata) {
         this.metadata = metadata;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public Password getPassword() {
+        return password;
     }
 }

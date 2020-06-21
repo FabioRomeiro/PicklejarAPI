@@ -1,5 +1,6 @@
 package com.romeiro.picklejar.controller;
 
+import com.romeiro.picklejar.config.security.TokenService;
 import com.romeiro.picklejar.controller.dto.PasswordDto;
 import com.romeiro.picklejar.controller.form.PasswordForm;
 import com.romeiro.picklejar.model.Password;
@@ -31,23 +32,24 @@ public class PasswordController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private TokenService tokenService;
+
     @GetMapping
     public Page<PasswordDto> getPasswords(
             @RequestParam(required = false) String text,
-            @RequestParam(value = "not", required = false) Integer[] excludeIds,
             @RequestParam(required = false) boolean favorite,
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC, page = 0, size = 10) Pageable pageable) {
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC, page = 0, size = 10) Pageable pageable,
+            @RequestHeader("Authorization") String token) {
 
+        Integer userId = tokenService.getUserId(tokenService.getFormattedToken(token));
         Page<Password> passwords = null;
 
-        if (text == null && excludeIds.length > 0) {
-            passwords = passwordRepository.findAllNotIn(excludeIds, pageable);
-        }
-        else if (text == null) {
-            passwords = passwordRepository.findAll(pageable);
+        if (text == null) {
+            passwords = passwordRepository.findByUserId(userId, pageable);
         }
         else {
-            passwords = passwordRepository.findByAnyText(text, pageable);
+            passwords = passwordRepository.findByAnyText(userId, text, pageable);
         }
 
         return PasswordDto.convert(passwords);
@@ -55,8 +57,9 @@ public class PasswordController {
 
     @PostMapping
     @Transactional
-    public ResponseEntity<PasswordDto> registerPassword(@RequestBody PasswordForm passwordForm, UriComponentsBuilder uriBuilder) {
-        Password password = passwordForm.convert(userRepository);
+    public ResponseEntity<PasswordDto> registerPassword(@RequestBody PasswordForm passwordForm, @RequestHeader("Authorization") String token, UriComponentsBuilder uriBuilder) {
+        Integer userId = tokenService.getUserId(tokenService.getFormattedToken(token));
+        Password password = passwordForm.convert(userRepository, userId);
         passwordRepository.save(password);
 
         URI uri = uriBuilder.path("/passwords/{id}").buildAndExpand(password.getId()).toUri();
@@ -101,6 +104,7 @@ public class PasswordController {
     }
 
     @GetMapping("/{id}/secret-key")
+    @CacheEvict(value = "password-secret-key", allEntries = true)
     public ResponseEntity<String> getPasswordSecretKey(@PathVariable("id") Integer id) {
         Optional<Password> password = passwordRepository.findById(id);
 

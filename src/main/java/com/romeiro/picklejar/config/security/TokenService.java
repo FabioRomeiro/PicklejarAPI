@@ -55,4 +55,14 @@ public class TokenService {
 
         return token.substring(7, token.length());
     }
+
+    public boolean isTokenExpired(String token) {
+        try {
+            Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
+            return false;
+        }
+        catch (Exception e) {
+            return e.getMessage().startsWith("JWT expired");
+        }
+    }
 }

@@ -43,7 +43,7 @@ public class UserController {
     @CacheEvict(value = "user", allEntries = true)
     public ResponseEntity<UserDto> createUser(@RequestBody UserForm form, UriComponentsBuilder uriBuilder) {
         User user = form.convert();
-
+        userRepository.save(user);
         URI uri = uriBuilder.path("/user").build().toUri();
         return ResponseEntity.created(uri).body(new UserDto(user));
     }

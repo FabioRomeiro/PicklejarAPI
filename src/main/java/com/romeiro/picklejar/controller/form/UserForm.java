@@ -4,6 +4,7 @@ import com.romeiro.picklejar.model.Password;
 import com.romeiro.picklejar.model.Status;
 import com.romeiro.picklejar.model.User;
 import com.romeiro.picklejar.repository.UserRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDateTime;
 
@@ -31,7 +32,7 @@ public class UserForm {
     }
 
     public User convert() {
-        return new User(name, email, password, picture);
+        return new User(name, email, new BCryptPasswordEncoder().encode(password), picture);
     }
 
     public User update(Integer userId, UserRepository userRepository) {
@@ -44,7 +45,7 @@ public class UserForm {
             user.setEmail(this.email);
 
         if (this.password != null && !user.getPassword().equals(this.password))
-            user.setPassword(this.password);
+            user.setPassword(new BCryptPasswordEncoder().encode(this.password));
 
         if (this.picture != null && !user.getPicture().equals(this.picture))
             user.setPicture(this.picture);

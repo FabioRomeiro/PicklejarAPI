@@ -141,4 +141,12 @@ public class Password {
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

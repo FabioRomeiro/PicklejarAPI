@@ -51,6 +51,10 @@ public class Log {
         return userAgent;
     }
 
+    public void setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -75,7 +79,15 @@ public class Log {
         return user;
     }
 
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     public Password getPassword() {
         return password;
+    }
+
+    public void setPassword(Password password) {
+        this.password = password;
     }
 }

@@ -2,6 +2,7 @@ package com.romeiro.picklejar.controller;
 
 import com.romeiro.picklejar.config.security.TokenService;
 import com.romeiro.picklejar.controller.dto.LogDto;
+import com.romeiro.picklejar.controller.dto.PasswordDto;
 import com.romeiro.picklejar.controller.form.LogForm;
 import com.romeiro.picklejar.model.Log;
 import com.romeiro.picklejar.model.LogType;
@@ -17,6 +18,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.transaction.Transactional;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/logs")
@@ -54,6 +56,17 @@ public class LogController {
         }
 
         return LogDto.convert(logs);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<LogDto> getLogById(@PathVariable("id") Integer id) {
+        Optional<Log> log = logRepository.findById(id);
+
+        if (log.isPresent()) {
+            return ResponseEntity.ok(new LogDto(log.get()));
+        }
+
+        return ResponseEntity.notFound().build();
     }
 
     @PostMapping

@@ -17,6 +17,7 @@ public class PasswordDto {
     private Boolean favorite;
     private String image;
     private Status status;
+    private boolean active;
     private LocalDateTime lastAccess;
     private LocalDateTime lastUpdate;
     private LocalDateTime createdAt;
@@ -29,6 +30,7 @@ public class PasswordDto {
         this.favorite = password.getFavorite();
         this.image = password.getImage();
         this.status = password.getStatus();
+        this.active = password.isActive();
         this.lastAccess = password.getLastAccess();
         this.lastUpdate = password.getLastUpdate();
         this.createdAt = password.getCreatedAt();
@@ -60,6 +62,10 @@ public class PasswordDto {
 
     public Status getStatus() {
         return status;
+    }
+
+    public boolean isActive() {
+        return active;
     }
 
     public LocalDateTime getLastAccess() {

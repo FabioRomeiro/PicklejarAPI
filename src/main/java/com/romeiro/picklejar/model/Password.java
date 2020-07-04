@@ -34,6 +34,9 @@ public class Password {
     @Column(name = "PWD_STATUS")
     private Status status;
 
+    @Column(name = "PWD_ACTIVE")
+    private boolean active = true;
+
     @Column(name = "PWD_LASTACCESS")
     private LocalDateTime lastAccess = LocalDateTime.now();
 
@@ -120,6 +123,14 @@ public class Password {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public LocalDateTime getLastAccess() {

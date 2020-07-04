@@ -39,6 +39,7 @@ public class PasswordController {
     public Page<PasswordDto> getPasswords(
             @RequestParam(required = false) String text,
             @RequestParam(required = false) boolean favorite,
+            @RequestParam(required = false, defaultValue = "false") boolean inactiveIncluded,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC, page = 0, size = 10) Pageable pageable,
             @RequestHeader("Authorization") String token) {
 
@@ -46,10 +47,16 @@ public class PasswordController {
         Page<Password> passwords = null;
 
         if (text == null) {
-            passwords = passwordRepository.findByUserId(userId, pageable);
+            if (inactiveIncluded)
+                passwords = passwordRepository.findByUserIdIncludingInactives(userId, pageable);
+            else
+                passwords = passwordRepository.findByUserId(userId, pageable);
         }
         else {
-            passwords = passwordRepository.findByAnyText(userId, text, pageable);
+            if (inactiveIncluded)
+                passwords = passwordRepository.findByAnyTextIncludingInactives(userId, text, pageable);
+            else
+                passwords = passwordRepository.findByAnyText(userId, text, pageable);
         }
 
         return PasswordDto.convert(passwords);
@@ -93,10 +100,12 @@ public class PasswordController {
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity<?> deletePassword(@PathVariable("id") Integer id) {
-        Optional<Password> password = passwordRepository.findById(id);
+        Optional<Password> optionalPassword = passwordRepository.findById(id);
 
-        if (password.isPresent()) {
-            passwordRepository.deleteById(id);
+        if (optionalPassword.isPresent()) {
+            Password password = optionalPassword.get();
+            password.setActive(false);
+            passwordRepository.save(password);
             return ResponseEntity.ok().build();
         }
 

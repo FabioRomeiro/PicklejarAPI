@@ -10,6 +10,7 @@ import com.romeiro.picklejar.model.Password;
 import com.romeiro.picklejar.repository.LogRepository;
 import com.romeiro.picklejar.repository.PasswordRepository;
 import com.romeiro.picklejar.repository.UserRepository;
+import com.romeiro.picklejar.service.LogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,9 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/logs")
 public class LogController {
+
+    @Autowired
+    private LogService logService;
 
     @Autowired
     private LogRepository logRepository;
@@ -43,27 +47,16 @@ public class LogController {
             @RequestHeader("Authorization") String token) {
 
         Integer userId = tokenService.getUserId(tokenService.getFormattedToken(token));
-        List<Log> logs = null;
-
-        if (logType != null && passwordId != null) {
-            logs = logRepository.findByTypeAndPasswordId(userId, logType, passwordId);
-        }
-        else if (logType != null) {
-            logs = logRepository.findByType(userId, logType);
-        }
-        else {
-            logs = logRepository.findByUserId(userId);
-        }
-
+        List<Log> logs = logService.findByUser(userId, logType, passwordId);
         return LogDto.convert(logs);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<LogDto> getLogById(@PathVariable("id") Integer id) {
-        Optional<Log> log = logRepository.findById(id);
+        Log log = logService.findById(id);
 
-        if (log.isPresent()) {
-            return ResponseEntity.ok(new LogDto(log.get()));
+        if (log != null) {
+            return ResponseEntity.ok(new LogDto(log));
         }
 
         return ResponseEntity.notFound().build();
@@ -78,17 +71,7 @@ public class LogController {
             UriComponentsBuilder uriBuilder) {
 
         Integer userId = tokenService.getUserId(tokenService.getFormattedToken(token));
-        Log log = logForm.convert(userAgent, userRepository, userId, passwordRepository);
-
-        Password password = log.getPassword();
-
-        if (password != null) {
-            password.setLastAccess(log.getCreatedAt());
-            passwordRepository.save(password);
-        }
-
-        logRepository.save(log);
-
+        Log log = logService.createLog(logForm, userAgent, userId);
         URI uri = uriBuilder.path("/logs/{id}").buildAndExpand(log.getId()).toUri();
         return ResponseEntity.created(uri).body(new LogDto(log));
     }

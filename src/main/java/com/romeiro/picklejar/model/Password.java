@@ -1,5 +1,8 @@
 package com.romeiro.picklejar.model;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import com.romeiro.picklejar.controller.View;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
@@ -10,44 +13,57 @@ public class Password {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "PWD_ID")
+    @JsonView(View.Password.class)
     private Integer id;
 
     @Column(name = "PWD_NAME")
+    @JsonView(View.Password.class)
     private String name;
 
     @Column(name = "PWD_USERNAME")
+    @JsonView(View.Password.class)
     private String username;
 
     @Column(name = "PWD_PASSWORD")
+    @JsonView(View.Password.class)
     private String password;
 
     @Column(name = "PWD_LINK")
+    @JsonView(View.Password.class)
     private String link;
 
     @Column(name = "PWD_FAVORITE")
+    @JsonView(View.Password.class)
     private Boolean favorite;
 
     @Column(name = "PWD_IMAGE")
+    @JsonView(View.Password.class)
     private String image;
 
     @Enumerated(EnumType.STRING)
+    @JsonView(View.Password.class)
     @Column(name = "PWD_STATUS")
     private Status status;
 
     @Column(name = "PWD_ACTIVE")
+    @JsonView(View.Password.class)
     private boolean active = true;
 
     @Column(name = "PWD_LASTACCESS")
+    @JsonView(View.Password.class)
     private LocalDateTime lastAccess = LocalDateTime.now();
 
     @Column(name = "PWD_LASTUPDATE")
+    @JsonView(View.Password.class)
     private LocalDateTime lastUpdate = LocalDateTime.now();
 
     @Column(name = "PWD_CREATEDAT")
+    @JsonView(View.Password.class)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @ManyToOne
     @JoinColumn(name = "USR_ID")
+    @JsonView(View.Password.class)
     private User user;
 
     public Password () { }

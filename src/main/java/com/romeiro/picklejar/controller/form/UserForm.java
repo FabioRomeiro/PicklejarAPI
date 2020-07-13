@@ -1,12 +1,13 @@
 package com.romeiro.picklejar.controller.form;
 
-import com.romeiro.picklejar.model.Password;
-import com.romeiro.picklejar.model.Status;
-import com.romeiro.picklejar.model.User;
+import com.romeiro.picklejar.model.*;
+import com.romeiro.picklejar.repository.RoleRepository;
 import com.romeiro.picklejar.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 public class UserForm {
 
@@ -31,8 +32,19 @@ public class UserForm {
         this.picture = picture;
     }
 
-    public User convert() {
-        return new User(name, email, new BCryptPasswordEncoder().encode(password), picture);
+    public User convert(RoleRepository roleRepository) {
+        Optional<Role> optionalRole = roleRepository.findByName(RoleType.ROLE_USER.toString());
+        Role role = null;
+
+        if (optionalRole.isEmpty()) {
+            role = new Role(RoleType.ROLE_USER);
+            roleRepository.save(role);
+        }
+        else {
+            role = optionalRole.get();
+        }
+
+        return new User(name, email, new BCryptPasswordEncoder().encode(password), picture, role);
     }
 
     public User update(Integer userId, UserRepository userRepository) {

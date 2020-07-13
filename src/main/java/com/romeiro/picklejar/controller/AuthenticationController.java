@@ -1,5 +1,6 @@
 package com.romeiro.picklejar.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.romeiro.picklejar.config.security.TokenService;
 import com.romeiro.picklejar.controller.dto.AuthDto;
 import com.romeiro.picklejar.controller.dto.UserDto;
@@ -31,7 +32,7 @@ public class AuthenticationController {
     private UserRepository userRepository;
 
     @PostMapping
-    public ResponseEntity<AuthDto> authenticate(@RequestBody LoginForm form) {
+    public ResponseEntity<AuthDto> authenticate(@RequestBody LoginForm form) throws JsonProcessingException {
         UsernamePasswordAuthenticationToken loginData = form.convert();
 
         try {

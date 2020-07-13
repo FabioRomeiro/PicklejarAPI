@@ -1,5 +1,8 @@
 package com.romeiro.picklejar.model;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import com.romeiro.picklejar.controller.View;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
@@ -10,27 +13,34 @@ public class Log {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "LOG_ID")
+    @JsonView(View.Log.class)
     private Integer id;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "LOG_TYPE")
+    @JsonView(View.Log.class)
     private LogType type;
 
     @Column(name = "LOG_USERAGENT")
+    @JsonView(View.Log.class)
     private String userAgent;
 
     @Column(name = "LOG_METADATA")
+    @JsonView(View.Log.class)
     private String metadata;
 
     @Column(name = "LOG_CREATEDAT")
+    @JsonView(View.Log.class)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @ManyToOne
     @JoinColumn(name = "USR_ID")
+    @JsonView(View.Log.class)
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "PWD_ID")
+    @JsonView(View.Log.class)
     private Password password;
 
     public Log() { }

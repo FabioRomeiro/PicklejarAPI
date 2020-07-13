@@ -1,5 +1,7 @@
 package com.romeiro.picklejar.config.security;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.romeiro.picklejar.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -19,12 +21,15 @@ public class TokenService {
     @Value("${picklejar.jwt.secret}")
     private String secret;
 
-    public String generateToken(Authentication authentication) {
+    public String generateToken(Authentication authentication) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
         User user = (User) authentication.getPrincipal();
+        String userJsonAsString = mapper.writeValueAsString(user);
         Date today = new Date();
         Date expirationDate = new Date(today.getTime() + Long.parseLong(expiration));
 
         return Jwts.builder()
+                    .claim("userDetails", userJsonAsString)
                     .setIssuer("PickleJar API")
                     .setSubject(user.getId().toString())
                     .setIssuedAt(today)

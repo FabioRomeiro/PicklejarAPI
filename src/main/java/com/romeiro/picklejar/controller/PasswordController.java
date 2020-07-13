@@ -6,6 +6,7 @@ import com.romeiro.picklejar.controller.form.PasswordForm;
 import com.romeiro.picklejar.model.Password;
 import com.romeiro.picklejar.repository.PasswordRepository;
 import com.romeiro.picklejar.repository.UserRepository;
+import com.romeiro.picklejar.service.PasswordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -27,10 +28,7 @@ import java.util.Optional;
 public class PasswordController {
 
     @Autowired
-    private PasswordRepository passwordRepository;
-
-    @Autowired
-    private UserRepository userRepository;
+    private PasswordService passwordService;
 
     @Autowired
     private TokenService tokenService;
@@ -44,21 +42,7 @@ public class PasswordController {
             @RequestHeader("Authorization") String token) {
 
         Integer userId = tokenService.getUserId(tokenService.getFormattedToken(token));
-        Page<Password> passwords = null;
-
-        if (text == null) {
-            if (inactiveIncluded)
-                passwords = passwordRepository.findByUserIdIncludingInactives(userId, pageable);
-            else
-                passwords = passwordRepository.findByUserId(userId, pageable);
-        }
-        else {
-            if (inactiveIncluded)
-                passwords = passwordRepository.findByAnyTextIncludingInactives(userId, text, pageable);
-            else
-                passwords = passwordRepository.findByAnyText(userId, text, pageable);
-        }
-
+        Page<Password> passwords = passwordService.findByUser(userId, text, inactiveIncluded, pageable);
         return PasswordDto.convert(passwords);
     }
 
@@ -66,19 +50,17 @@ public class PasswordController {
     @Transactional
     public ResponseEntity<PasswordDto> registerPassword(@RequestBody PasswordForm passwordForm, @RequestHeader("Authorization") String token, UriComponentsBuilder uriBuilder) {
         Integer userId = tokenService.getUserId(tokenService.getFormattedToken(token));
-        Password password = passwordForm.convert(userRepository, userId);
-        passwordRepository.save(password);
-
+        Password password = passwordService.createPassword(passwordForm, userId);
         URI uri = uriBuilder.path("/passwords/{id}").buildAndExpand(password.getId()).toUri();
         return ResponseEntity.created(uri).body(new PasswordDto(password));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<PasswordDto> getPasswordById(@PathVariable("id") Integer id) {
-        Optional<Password> password = passwordRepository.findById(id);
+        Password password = passwordService.findById(id);
 
-        if (password.isPresent()) {
-            return ResponseEntity.ok(new PasswordDto(password.get()));
+        if (password != null) {
+            return ResponseEntity.ok(new PasswordDto(password));
         }
 
         return ResponseEntity.notFound().build();
@@ -87,10 +69,9 @@ public class PasswordController {
     @PutMapping("/{id}")
     @Transactional
     public ResponseEntity<PasswordDto> updatePassword(@PathVariable("id") Integer id, @RequestBody PasswordForm form) {
-        Optional<Password> optional = passwordRepository.findById(id);
+        Password password = passwordService.updatePassword(id, form);
 
-        if (optional.isPresent()) {
-            Password password = form.update(id, passwordRepository);
+        if (password != null) {
             return ResponseEntity.ok(new PasswordDto(password));
         }
 
@@ -100,12 +81,9 @@ public class PasswordController {
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity<?> deletePassword(@PathVariable("id") Integer id) {
-        Optional<Password> optionalPassword = passwordRepository.findById(id);
+        Boolean deleted = passwordService.deletePassword(id);
 
-        if (optionalPassword.isPresent()) {
-            Password password = optionalPassword.get();
-            password.setActive(false);
-            passwordRepository.save(password);
+        if (deleted) {
             return ResponseEntity.ok().build();
         }
 
@@ -115,10 +93,10 @@ public class PasswordController {
     @GetMapping("/{id}/secret-key")
     @CacheEvict(value = "password-secret-key", allEntries = true)
     public ResponseEntity<String> getPasswordSecretKey(@PathVariable("id") Integer id) {
-        Optional<Password> password = passwordRepository.findById(id);
+        String secretKey = passwordService.getSecretKey(id);
 
-        if (password.isPresent()) {
-            return ResponseEntity.ok(password.get().getPassword());
+        if (secretKey != null) {
+            return ResponseEntity.ok(secretKey);
         }
 
         return ResponseEntity.notFound().build();
